@@ -45,6 +45,11 @@ export function TransactionList({ transactions, onEdit, onDelete }: TransactionL
                   >
                     {transaction.type === "given" ? "Given" : transaction.type === "taken" ? "Taken" : "Left to Give"}
                   </Badge>
+                  {transaction.type === "left_to_give" && (
+                    <Badge variant="outline" className="border-muted-foreground text-muted-foreground">
+                      Not Given
+                    </Badge>
+                  )}
                   {isSettled ? (
                     <Badge variant="outline" className="border-settled text-settled">
                       <CheckCircle2 className="w-3 h-3 mr-1" />
