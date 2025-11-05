@@ -47,6 +47,16 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        given: {
+          DEFAULT: "hsl(var(--given))",
+          foreground: "hsl(var(--given-foreground))",
+        },
+        taken: {
+          DEFAULT: "hsl(var(--taken))",
+          foreground: "hsl(var(--taken-foreground))",
+        },
+        pending: "hsl(var(--pending))",
+        settled: "hsl(var(--settled))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
