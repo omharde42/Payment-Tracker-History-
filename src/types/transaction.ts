@@ -1,4 +1,4 @@
-export type TransactionType = "given" | "taken";
+export type TransactionType = "given" | "taken" | "left_to_give";
 export type PendingStatus = "settled" | "pending";
 
 export interface Transaction {

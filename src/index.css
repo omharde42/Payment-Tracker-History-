@@ -43,6 +43,8 @@ All colors MUST be HSL.
     --given-foreground: 0 0% 100%;
     --taken: 25 95% 53%;
     --taken-foreground: 0 0% 100%;
+    --left-to-give: 220 70% 50%;
+    --left-to-give-foreground: 0 0% 100%;
     --pending: 48 96% 53%;
     --settled: 142 76% 36%;
 
@@ -96,6 +98,8 @@ All colors MUST be HSL.
     --given-foreground: 0 0% 100%;
     --taken: 25 95% 55%;
     --taken-foreground: 0 0% 100%;
+    --left-to-give: 220 70% 55%;
+    --left-to-give-foreground: 0 0% 100%;
     --pending: 48 96% 55%;
     --settled: 142 76% 40%;
     

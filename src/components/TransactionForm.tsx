@@ -102,6 +102,7 @@ export function TransactionForm({ open, onOpenChange, onSubmit, editTransaction 
                 <SelectContent>
                   <SelectItem value="given">Given</SelectItem>
                   <SelectItem value="taken">Taken</SelectItem>
+                  <SelectItem value="left_to_give">Left to Give</SelectItem>
                 </SelectContent>
               </Select>
             </div>

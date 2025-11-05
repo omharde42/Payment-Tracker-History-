@@ -55,6 +55,10 @@ export default {
           DEFAULT: "hsl(var(--taken))",
           foreground: "hsl(var(--taken-foreground))",
         },
+        "left-to-give": {
+          DEFAULT: "hsl(var(--left-to-give))",
+          foreground: "hsl(var(--left-to-give-foreground))",
+        },
         pending: "hsl(var(--pending))",
         settled: "hsl(var(--settled))",
         sidebar: {

@@ -34,10 +34,16 @@ export function TransactionList({ transactions, onEdit, onDelete }: TransactionL
                 <div className="flex items-center gap-3 flex-wrap">
                   <h3 className="font-semibold text-lg">{transaction.personName}</h3>
                   <Badge 
-                    variant={transaction.type === "given" ? "default" : "secondary"}
-                    className={transaction.type === "given" ? "bg-given text-given-foreground" : "bg-taken text-taken-foreground"}
+                    variant="default"
+                    className={
+                      transaction.type === "given" 
+                        ? "bg-given text-given-foreground" 
+                        : transaction.type === "taken"
+                        ? "bg-taken text-taken-foreground"
+                        : "bg-left-to-give text-left-to-give-foreground"
+                    }
                   >
-                    {transaction.type === "given" ? "Given" : "Taken"}
+                    {transaction.type === "given" ? "Given" : transaction.type === "taken" ? "Taken" : "Left to Give"}
                   </Badge>
                   {isSettled ? (
                     <Badge variant="outline" className="border-settled text-settled">

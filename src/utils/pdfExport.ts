@@ -23,13 +23,18 @@ export function exportToPDF(transactions: Transaction[], monthYear: string) {
     .filter((t) => t.type === "taken")
     .reduce((sum, t) => sum + t.amount, 0);
   
+  const totalLeftToGive = transactions
+    .filter((t) => t.type === "left_to_give")
+    .reduce((sum, t) => sum + t.amount, 0);
+  
   const totalPending = transactions.reduce((sum, t) => sum + t.pendingAmount, 0);
 
   // Add summary
   doc.setFontSize(10);
   doc.text(`Total Given: ₹${totalGiven.toFixed(2)}`, 14, 47);
-  doc.text(`Total Taken: ₹${totalTaken.toFixed(2)}`, 70, 47);
-  doc.text(`Total Pending: ₹${totalPending.toFixed(2)}`, 126, 47);
+  doc.text(`Total Taken: ₹${totalTaken.toFixed(2)}`, 14, 53);
+  doc.text(`Left to Give: ₹${totalLeftToGive.toFixed(2)}`, 70, 47);
+  doc.text(`Total Pending: ₹${totalPending.toFixed(2)}`, 70, 53);
 
   // Prepare table data
   const tableData = transactions.map((transaction) => {
@@ -40,7 +45,7 @@ export function exportToPDF(transactions: Transaction[], monthYear: string) {
       format(date, "dd MMM yyyy"),
       format(createdAt, "hh:mm a"),
       transaction.personName,
-      transaction.type === "given" ? "Given" : "Taken",
+      transaction.type === "given" ? "Given" : transaction.type === "taken" ? "Taken" : "Left to Give",
       `₹${transaction.amount.toFixed(2)}`,
       `₹${transaction.pendingAmount.toFixed(2)}`,
       transaction.pendingAmount === 0 ? "✅" : "❌",
@@ -50,7 +55,7 @@ export function exportToPDF(transactions: Transaction[], monthYear: string) {
 
   // Add table
   autoTable(doc, {
-    startY: 55,
+    startY: 60,
     head: [["Date", "Time", "Person", "Type", "Amount", "Pending", "Status", "Note"]],
     body: tableData,
     theme: "striped",
