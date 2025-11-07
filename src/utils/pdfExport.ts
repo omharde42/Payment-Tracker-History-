@@ -26,15 +26,12 @@ export function exportToPDF(transactions: Transaction[], monthYear: string) {
   const totalLeftToGive = transactions
     .filter((t) => t.type === "left_to_give")
     .reduce((sum, t) => sum + t.amount, 0);
-  
-  const totalPending = transactions.reduce((sum, t) => sum + t.pendingAmount, 0);
 
   // Add summary
   doc.setFontSize(10);
   doc.text(`Total Given: ₹${totalGiven.toFixed(2)}`, 14, 47);
-  doc.text(`Total Taken: ₹${totalTaken.toFixed(2)}`, 14, 53);
-  doc.text(`Left to Give: ₹${totalLeftToGive.toFixed(2)}`, 70, 47);
-  doc.text(`Total Pending: ₹${totalPending.toFixed(2)}`, 70, 53);
+  doc.text(`Total Taken: ₹${totalTaken.toFixed(2)}`, 70, 47);
+  doc.text(`Left to Give: ₹${totalLeftToGive.toFixed(2)}`, 126, 47);
 
   // Prepare table data
   const tableData = transactions.map((transaction) => {
@@ -47,16 +44,14 @@ export function exportToPDF(transactions: Transaction[], monthYear: string) {
       transaction.personName,
       transaction.type === "given" ? "Given" : transaction.type === "taken" ? "Taken" : "Left to Give",
       `₹${transaction.amount.toFixed(2)}`,
-      `₹${transaction.pendingAmount.toFixed(2)}`,
-      transaction.pendingAmount === 0 ? "✅" : "❌",
       transaction.note || "-",
     ];
   });
 
   // Add table
   autoTable(doc, {
-    startY: 60,
-    head: [["Date", "Time", "Person", "Type", "Amount", "Pending", "Status", "Note"]],
+    startY: 54,
+    head: [["Date", "Time", "Person", "Type", "Amount", "Note"]],
     body: tableData,
     theme: "striped",
     headStyles: {
@@ -70,12 +65,10 @@ export function exportToPDF(transactions: Transaction[], monthYear: string) {
     columnStyles: {
       0: { cellWidth: 25 },
       1: { cellWidth: 20 },
-      2: { cellWidth: 30 },
-      3: { cellWidth: 18 },
-      4: { cellWidth: 22 },
-      5: { cellWidth: 22 },
-      6: { cellWidth: 15 },
-      7: { cellWidth: 'auto' },
+      2: { cellWidth: 35 },
+      3: { cellWidth: 25 },
+      4: { cellWidth: 25 },
+      5: { cellWidth: 'auto' },
     },
   });
 

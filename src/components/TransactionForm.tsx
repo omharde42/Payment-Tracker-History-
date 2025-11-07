@@ -18,7 +18,6 @@ export function TransactionForm({ open, onOpenChange, onSubmit, editTransaction 
   const [personName, setPersonName] = useState("");
   const [amount, setAmount] = useState("");
   const [type, setType] = useState<TransactionType>("given");
-  const [pendingAmount, setPendingAmount] = useState("");
   const [note, setNote] = useState("");
   const [date, setDate] = useState("");
 
@@ -27,7 +26,6 @@ export function TransactionForm({ open, onOpenChange, onSubmit, editTransaction 
       setPersonName(editTransaction.personName);
       setAmount(editTransaction.amount.toString());
       setType(editTransaction.type);
-      setPendingAmount(editTransaction.pendingAmount.toString());
       setNote(editTransaction.note || "");
       setDate(editTransaction.date);
     } else {
@@ -43,7 +41,6 @@ export function TransactionForm({ open, onOpenChange, onSubmit, editTransaction 
       personName: personName.trim(),
       amount: parseFloat(amount),
       type,
-      pendingAmount: parseFloat(pendingAmount),
       note: note.trim() || undefined,
       date,
     };
@@ -54,7 +51,6 @@ export function TransactionForm({ open, onOpenChange, onSubmit, editTransaction 
     setPersonName("");
     setAmount("");
     setType("given");
-    setPendingAmount("");
     setNote("");
     setDate(new Date().toISOString().split("T")[0]);
     onOpenChange(false);
@@ -108,31 +104,15 @@ export function TransactionForm({ open, onOpenChange, onSubmit, editTransaction 
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="pendingAmount">Pending Amount (₹)</Label>
-              <Input
-                id="pendingAmount"
-                type="number"
-                step="0.01"
-                min="0"
-                value={pendingAmount}
-                onChange={(e) => setPendingAmount(e.target.value)}
-                required
-                placeholder="0.00"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
-              <Input
-                id="date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                required
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="date">Date</Label>
+            <Input
+              id="date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+            />
           </div>
 
           <div className="space-y-2">

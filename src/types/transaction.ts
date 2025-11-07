@@ -6,7 +6,6 @@ export interface Transaction {
   personName: string;
   amount: number;
   type: TransactionType;
-  pendingAmount: number;
   note?: string;
   date: string; // ISO date string
   createdAt: string; // ISO datetime string
