@@ -29,8 +29,8 @@ export function exportToPDF(transactions: Transaction[], monthYear: string) {
 
   // Add summary
   doc.setFontSize(10);
-  doc.text(`Total Given: INR ${totalGiven.toFixed(2)}`, 14, 47);
-  doc.text(`Total Taken: INR ${totalTaken.toFixed(2)}`, 70, 47);
+  doc.text(`Total Give: INR ${totalGiven.toFixed(2)}`, 14, 47);
+  doc.text(`Total Take: INR ${totalTaken.toFixed(2)}`, 70, 47);
   doc.text(`Left to Give: INR ${totalLeftToGive.toFixed(2)}`, 126, 47);
 
   // Prepare table data
@@ -42,7 +42,7 @@ export function exportToPDF(transactions: Transaction[], monthYear: string) {
       format(date, "dd MMM yyyy"),
       format(createdAt, "hh:mm a"),
       transaction.personName,
-      transaction.type === "given" ? "Given" : transaction.type === "taken" ? "Taken" : "Left to Give",
+      transaction.type === "given" ? "Give" : transaction.type === "taken" ? "Take" : "Left to Give",
       `INR ${transaction.amount.toFixed(2)}`,
       transaction.note || "-",
     ];

@@ -42,7 +42,7 @@ export function TransactionList({ transactions, onEdit, onDelete }: TransactionL
                         : "bg-left-to-give text-left-to-give-foreground"
                     }
                   >
-                    {transaction.type === "given" ? "Given" : transaction.type === "taken" ? "Taken" : "Left to Give"}
+                    {transaction.type === "given" ? "Give" : transaction.type === "taken" ? "Take" : "Left to Give"}
                   </Badge>
                   {transaction.type === "left_to_give" && (
                     <Badge variant="outline" className="border-muted-foreground text-muted-foreground">

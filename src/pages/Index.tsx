@@ -96,7 +96,7 @@ const Index = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Finance Tracker</h1>
-              <p className="text-muted-foreground">Track your given and taken transactions</p>
+              <p className="text-muted-foreground">Track your give and take transactions</p>
             </div>
           </div>
         </div>
