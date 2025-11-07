@@ -5,7 +5,7 @@ import { TransactionForm } from "@/components/TransactionForm";
 import { TransactionList } from "@/components/TransactionList";
 import { SummaryCards } from "@/components/SummaryCards";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { Plus, Download, Wallet } from "lucide-react";
 import { format, startOfMonth, endOfMonth, parseISO } from "date-fns";
 import { exportToPDF } from "@/utils/pdfExport";
@@ -17,18 +17,6 @@ const Index = () => {
   const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>();
   const [selectedMonth, setSelectedMonth] = useState<string>(() => format(new Date(), "yyyy-MM"));
 
-  // Get unique months from transactions
-  const availableMonths = useMemo(() => {
-    const months = new Set<string>();
-    months.add(format(new Date(), "yyyy-MM")); // Always include current month
-    
-    transactions.forEach((t) => {
-      const month = format(parseISO(t.date), "yyyy-MM");
-      months.add(month);
-    });
-
-    return Array.from(months).sort().reverse();
-  }, [transactions]);
 
   // Filter transactions by selected month
   const filteredTransactions = useMemo(() => {
@@ -121,18 +109,15 @@ const Index = () => {
         {/* Controls */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <div className="flex-1">
-            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-              <SelectTrigger className="w-full sm:w-[200px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {availableMonths.map((month) => (
-                  <SelectItem key={month} value={month}>
-                    {format(parseISO(month + "-01"), "MMMM yyyy")}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Input
+              type="month"
+              aria-label="Select month and year"
+              className="w-full sm:w-[200px]"
+              min="2000-01"
+              max="2045-12"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+            />
           </div>
           <div className="flex gap-3">
             <Button onClick={handleExportPDF} variant="outline" className="flex-1 sm:flex-none">
