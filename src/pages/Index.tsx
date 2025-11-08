@@ -9,7 +9,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Download, Upload, Wallet } from "lucide-react";
+import { Plus, Download, Upload, Wallet, Search } from "lucide-react";
 import { format, startOfMonth, endOfMonth, parseISO } from "date-fns";
 import { exportToPDF } from "@/utils/pdfExport";
 import { toast } from "sonner";
@@ -22,10 +22,11 @@ const Index = () => {
   const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>();
   const [selectedMonth, setSelectedMonth] = useState<string>(() => format(new Date(), "yyyy-MM"));
   const [typeFilter, setTypeFilter] = useState<TransactionType | "all">("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
 
-  // Filter transactions by selected month and type
+  // Filter transactions by selected month, type, and search query
   const filteredTransactions = useMemo(() => {
     const monthStart = startOfMonth(parseISO(selectedMonth + "-01"));
     const monthEnd = endOfMonth(parseISO(selectedMonth + "-01"));
@@ -35,10 +36,12 @@ const Index = () => {
         const transactionDate = parseISO(t.date);
         const isInMonth = transactionDate >= monthStart && transactionDate <= monthEnd;
         const matchesType = typeFilter === "all" || t.type === typeFilter;
-        return isInMonth && matchesType;
+        const matchesSearch = searchQuery === "" || 
+          t.personName.toLowerCase().includes(searchQuery.toLowerCase());
+        return isInMonth && matchesType && matchesSearch;
       })
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }, [transactions, selectedMonth, typeFilter]);
+  }, [transactions, selectedMonth, typeFilter, searchQuery]);
 
   const handleAddTransaction = (transactionData: Omit<Transaction, "id" | "createdAt">) => {
     if (editingTransaction) {
@@ -216,6 +219,16 @@ const Index = () => {
         {/* Controls */}
         <div className="flex flex-col gap-3 mb-6">
           <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative w-full sm:flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search by person name..."
+                className="pl-9"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
             <Input
               type="month"
               aria-label="Select month and year"
