@@ -9,7 +9,8 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Download, Upload, Wallet, Search } from "lucide-react";
+import { Plus, Download, Upload, Wallet, Search, BarChart3 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { format, startOfMonth, endOfMonth, parseISO } from "date-fns";
 import { exportToPDF } from "@/utils/pdfExport";
 import { toast } from "sonner";
@@ -202,7 +203,15 @@ const Index = () => {
                 <p className="text-muted-foreground">Track your give and take transactions</p>
               </div>
             </div>
-            <ThemeToggle />
+            <div className="flex items-center gap-3">
+              <Link to="/statistics">
+                <Button variant="outline">
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Statistics
+                </Button>
+              </Link>
+              <ThemeToggle />
+            </div>
           </div>
         </div>
 
