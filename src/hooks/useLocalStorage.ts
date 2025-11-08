@@ -1,4 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { toast } from "sonner";
+
+const isDevelopment = import.meta.env.DEV;
 
 export function useLocalStorage<T>(key: string, initialValue: T) {
   const [storedValue, setStoredValue] = useState<T>(() => {
@@ -6,7 +9,10 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
       const item = window.localStorage.getItem(key);
       return item ? JSON.parse(item) : initialValue;
     } catch (error) {
-      console.error("Error reading from localStorage:", error);
+      if (isDevelopment) {
+        console.error("Error reading from localStorage:", error);
+      }
+      toast.error("Failed to load data from storage");
       return initialValue;
     }
   });
@@ -17,7 +23,10 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
       setStoredValue(valueToStore);
       window.localStorage.setItem(key, JSON.stringify(valueToStore));
     } catch (error) {
-      console.error("Error writing to localStorage:", error);
+      if (isDevelopment) {
+        console.error("Error writing to localStorage:", error);
+      }
+      toast.error("Failed to save data to storage");
     }
   };
 

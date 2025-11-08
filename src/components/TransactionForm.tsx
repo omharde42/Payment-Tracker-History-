@@ -6,6 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { transactionSchema } from "@/schemas/transaction";
+import { toast } from "sonner";
+import { z } from "zod";
 
 interface TransactionFormProps {
   open: boolean;
@@ -20,6 +23,7 @@ export function TransactionForm({ open, onOpenChange, onSubmit, editTransaction 
   const [type, setType] = useState<TransactionType>("given");
   const [note, setNote] = useState("");
   const [date, setDate] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (editTransaction) {
@@ -36,24 +40,46 @@ export function TransactionForm({ open, onOpenChange, onSubmit, editTransaction 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors({});
     
-    const transactionData: Omit<Transaction, "id" | "createdAt"> = {
-      personName: personName.trim(),
-      amount: parseFloat(amount),
-      type,
-      note: note.trim() || undefined,
-      date,
-    };
+    try {
+      const validated = transactionSchema.parse({
+        personName: personName.trim(),
+        amount: parseFloat(amount),
+        type,
+        note: note.trim() || undefined,
+        date,
+      });
 
-    onSubmit(transactionData);
-    
-    // Reset form
-    setPersonName("");
-    setAmount("");
-    setType("given");
-    setNote("");
-    setDate(new Date().toISOString().split("T")[0]);
-    onOpenChange(false);
+      const transactionData: Omit<Transaction, "id" | "createdAt"> = {
+        personName: validated.personName,
+        amount: validated.amount,
+        type: validated.type,
+        note: validated.note,
+        date: validated.date,
+      };
+
+      onSubmit(transactionData);
+      
+      // Reset form
+      setPersonName("");
+      setAmount("");
+      setType("given");
+      setNote("");
+      setDate(new Date().toISOString().split("T")[0]);
+      onOpenChange(false);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const fieldErrors: Record<string, string> = {};
+        error.errors.forEach((err) => {
+          if (err.path[0]) {
+            fieldErrors[err.path[0].toString()] = err.message;
+          }
+        });
+        setErrors(fieldErrors);
+        toast.error("Please fix the errors in the form");
+      }
+    }
   };
 
   return (
@@ -69,9 +95,12 @@ export function TransactionForm({ open, onOpenChange, onSubmit, editTransaction 
               id="personName"
               value={personName}
               onChange={(e) => setPersonName(e.target.value)}
-              required
               placeholder="Enter person's name"
+              maxLength={100}
             />
+            {errors.personName && (
+              <p className="text-sm text-destructive">{errors.personName}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -84,9 +113,11 @@ export function TransactionForm({ open, onOpenChange, onSubmit, editTransaction 
                 min="0"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                required
                 placeholder="0.00"
               />
+              {errors.amount && (
+                <p className="text-sm text-destructive">{errors.amount}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -111,8 +142,10 @@ export function TransactionForm({ open, onOpenChange, onSubmit, editTransaction 
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              required
             />
+            {errors.date && (
+              <p className="text-sm text-destructive">{errors.date}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -123,7 +156,11 @@ export function TransactionForm({ open, onOpenChange, onSubmit, editTransaction 
               onChange={(e) => setNote(e.target.value)}
               placeholder="Add any additional notes..."
               rows={3}
+              maxLength={500}
             />
+            {errors.note && (
+              <p className="text-sm text-destructive">{errors.note}</p>
+            )}
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
