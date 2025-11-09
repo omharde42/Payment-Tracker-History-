@@ -3,6 +3,7 @@ import { Transaction } from "@/types/transaction";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AIInsights } from "@/components/AIInsights";
 import { ArrowLeft, TrendingUp, Users, Calendar, Wallet } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useMemo } from "react";
@@ -127,6 +128,11 @@ const Statistics = () => {
             </div>
             <ThemeToggle />
           </div>
+        </div>
+
+        {/* AI Insights */}
+        <div className="mb-8">
+          <AIInsights transactions={transactions} />
         </div>
 
         {/* Summary Cards */}
