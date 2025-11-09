@@ -1,6 +1,7 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Transaction, TransactionType } from "@/types/transaction";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useTransactions } from "@/hooks/useTransactions";
+import { useAuth } from "@/hooks/useAuth";
 import { TransactionForm } from "@/components/TransactionForm";
 import { TransactionList } from "@/components/TransactionList";
 import { SummaryCards } from "@/components/SummaryCards";
@@ -9,23 +10,29 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Download, Upload, Wallet, Search, BarChart3 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Plus, Download, Wallet, Search, BarChart3, LogOut, Loader2 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { format, startOfMonth, endOfMonth, parseISO } from "date-fns";
 import { exportToPDF } from "@/utils/pdfExport";
 import { toast } from "sonner";
-import { transactionSchema } from "@/schemas/transaction";
-import { z } from "zod";
 
 const Index = () => {
-  const [transactions, setTransactions] = useLocalStorage<Transaction[]>("finance-transactions", []);
+  const navigate = useNavigate();
+  const { user, loading: authLoading, signOut } = useAuth();
+  const { transactions, loading: transactionsLoading, addTransaction, updateTransaction, deleteTransaction } = useTransactions();
+  
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>();
   const [selectedMonth, setSelectedMonth] = useState<string>(() => format(new Date(), "yyyy-MM"));
   const [typeFilter, setTypeFilter] = useState<TransactionType | "all">("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/auth");
+    }
+  }, [user, authLoading, navigate]);
 
   // Filter transactions by selected month, type, and search query
   const filteredTransactions = useMemo(() => {
@@ -44,27 +51,14 @@ const Index = () => {
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [transactions, selectedMonth, typeFilter, searchQuery]);
 
-  const handleAddTransaction = (transactionData: Omit<Transaction, "id" | "createdAt">) => {
+  const handleAddTransaction = async (transactionData: Omit<Transaction, "id" | "createdAt">) => {
     if (editingTransaction) {
-      // Update existing transaction
-      setTransactions((prev) =>
-        prev.map((t) =>
-          t.id === editingTransaction.id
-            ? { ...transactionData, id: t.id, createdAt: t.createdAt }
-            : t
-        )
-      );
-      toast.success("Transaction updated successfully!");
-      setEditingTransaction(undefined);
+      const success = await updateTransaction(editingTransaction.id, transactionData);
+      if (success) {
+        setEditingTransaction(undefined);
+      }
     } else {
-      // Add new transaction
-      const newTransaction: Transaction = {
-        ...transactionData,
-        id: crypto.randomUUID(),
-        createdAt: new Date().toISOString(),
-      };
-      setTransactions((prev) => [...prev, newTransaction]);
-      toast.success("Transaction added successfully!");
+      await addTransaction(transactionData);
     }
   };
 
@@ -73,10 +67,9 @@ const Index = () => {
     setIsFormOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this transaction?")) {
-      setTransactions((prev) => prev.filter((t) => t.id !== id));
-      toast.success("Transaction deleted successfully!");
+      await deleteTransaction(id);
     }
   };
 
@@ -98,95 +91,22 @@ const Index = () => {
     }
   };
 
-  const handleExportJSON = () => {
-    if (transactions.length === 0) {
-      toast.error("No transactions to export!");
-      return;
-    }
-
-    const dataStr = JSON.stringify(transactions, null, 2);
-    const dataBlob = new Blob([dataStr], { type: "application/json" });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `finance-tracker-backup-${format(new Date(), "yyyy-MM-dd")}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    toast.success("Data exported successfully!");
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/auth");
   };
 
-  const handleImportJSON = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  if (authLoading || transactionsLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const importedData = JSON.parse(e.target?.result as string);
-        
-        if (!Array.isArray(importedData)) {
-          toast.error("Invalid file format: Expected an array of transactions");
-          return;
-        }
-
-        // Validate each transaction
-        const validatedTransactions: Transaction[] = [];
-        const errors: string[] = [];
-
-        importedData.forEach((item, index) => {
-          try {
-            // Validate core transaction data
-            const validated = transactionSchema.parse({
-              personName: item.personName,
-              amount: item.amount,
-              type: item.type,
-              note: item.note,
-              date: item.date,
-            });
-
-            // Add with existing or new ID
-            validatedTransactions.push({
-              personName: validated.personName,
-              amount: validated.amount,
-              type: validated.type,
-              note: validated.note,
-              date: validated.date,
-              id: item.id || crypto.randomUUID(),
-              createdAt: item.createdAt || new Date().toISOString(),
-            });
-          } catch (error) {
-            if (error instanceof z.ZodError) {
-              errors.push(`Transaction ${index + 1}: ${error.errors[0].message}`);
-            }
-          }
-        });
-
-        if (errors.length > 0) {
-          toast.error(`Import failed with ${errors.length} error(s). First error: ${errors[0]}`);
-          return;
-        }
-
-        if (validatedTransactions.length === 0) {
-          toast.error("No valid transactions found in file");
-          return;
-        }
-
-        if (confirm(`Import ${validatedTransactions.length} transactions? This will replace all existing data.`)) {
-          setTransactions(validatedTransactions);
-          toast.success(`Successfully imported ${validatedTransactions.length} transactions!`);
-        }
-      } catch (error) {
-        toast.error("Failed to parse JSON file. Please check the file format.");
-      }
-    };
-
-    reader.readAsText(file);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -210,6 +130,10 @@ const Index = () => {
                   Statistics
                 </Button>
               </Link>
+              <Button variant="outline" onClick={handleSignOut}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </Button>
               <ThemeToggle />
             </div>
           </div>
@@ -262,23 +186,8 @@ const Index = () => {
           <div className="flex flex-wrap gap-3">
             <Button onClick={handleExportPDF} variant="outline" className="flex-1 sm:flex-none">
               <Download className="h-4 w-4 mr-2" />
-              PDF
+              Export PDF
             </Button>
-            <Button onClick={handleExportJSON} variant="outline" className="flex-1 sm:flex-none">
-              <Download className="h-4 w-4 mr-2" />
-              Export JSON
-            </Button>
-            <Button onClick={() => fileInputRef.current?.click()} variant="outline" className="flex-1 sm:flex-none">
-              <Upload className="h-4 w-4 mr-2" />
-              Import JSON
-            </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".json"
-              onChange={handleImportJSON}
-              className="hidden"
-            />
             <Button onClick={() => setIsFormOpen(true)} className="flex-1 sm:flex-none">
               <Plus className="h-4 w-4 mr-2" />
               Add Transaction

@@ -1,17 +1,27 @@
-import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useTransactions } from "@/hooks/useTransactions";
+import { useAuth } from "@/hooks/useAuth";
 import { Transaction } from "@/types/transaction";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AIInsights } from "@/components/AIInsights";
-import { ArrowLeft, TrendingUp, Users, Calendar, Wallet } from "lucide-react";
-import { Link } from "react-router-dom";
-import { useMemo } from "react";
-import { format, parseISO, startOfMonth, endOfMonth } from "date-fns";
+import { ArrowLeft, TrendingUp, Users, Calendar, Wallet, Loader2, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useMemo, useEffect } from "react";
+import { format, parseISO } from "date-fns";
 import { BarChart, Bar, PieChart, Pie, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from "recharts";
 
 const Statistics = () => {
-  const [transactions] = useLocalStorage<Transaction[]>("finance-transactions", []);
+  const navigate = useNavigate();
+  const { user, loading: authLoading, signOut } = useAuth();
+  const { transactions, loading: transactionsLoading } = useTransactions();
+
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/auth");
+    }
+  }, [user, authLoading, navigate]);
 
   const stats = useMemo(() => {
     // Top people by total transaction amount
@@ -109,6 +119,23 @@ const Statistics = () => {
     };
   }, [transactions]);
 
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/auth");
+  };
+
+  if (authLoading || transactionsLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container max-w-7xl mx-auto px-4 py-8">
@@ -126,7 +153,13 @@ const Statistics = () => {
                 <p className="text-muted-foreground">Detailed insights into your transactions</p>
               </div>
             </div>
-            <ThemeToggle />
+            <div className="flex items-center gap-3">
+              <Button variant="outline" onClick={handleSignOut}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </Button>
+              <ThemeToggle />
+            </div>
           </div>
         </div>
 
