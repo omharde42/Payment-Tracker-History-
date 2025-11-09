@@ -14,13 +14,94 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      archived_transactions: {
+        Row: {
+          amount: number
+          archive_month: string
+          archived_at: string
+          created_at: string
+          date: string
+          id: string
+          note: string | null
+          person_name: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          archive_month: string
+          archived_at?: string
+          created_at: string
+          date: string
+          id?: string
+          note?: string | null
+          person_name: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          archive_month?: string
+          archived_at?: string
+          created_at?: string
+          date?: string
+          id?: string
+          note?: string | null
+          person_name?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          date: string
+          id: string
+          note: string | null
+          person_name: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          date: string
+          id?: string
+          note?: string | null
+          person_name: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          date?: string
+          id?: string
+          note?: string | null
+          person_name?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      archive_month_transactions: {
+        Args: { target_month: string }
+        Returns: undefined
+      }
+      archive_previous_month_transactions: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
