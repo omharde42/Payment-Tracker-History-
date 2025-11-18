@@ -11,13 +11,20 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 const emailSchema = z.string().email("Invalid email address");
-const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
+const passwordSchema = z
+  .string()
+  .min(8, "Password must be at least 8 characters")
+  .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+  .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+  .regex(/[0-9]/, "Password must contain at least one number")
+  .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character");
 
 const Auth = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState(0);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -36,6 +43,22 @@ const Auth = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const calculatePasswordStrength = (pwd: string) => {
+    let strength = 0;
+    if (pwd.length >= 8) strength++;
+    if (pwd.length >= 12) strength++;
+    if (/[A-Z]/.test(pwd)) strength++;
+    if (/[a-z]/.test(pwd)) strength++;
+    if (/[0-9]/.test(pwd)) strength++;
+    if (/[^A-Za-z0-9]/.test(pwd)) strength++;
+    return Math.min(strength, 5);
+  };
+
+  const handlePasswordChange = (value: string) => {
+    setPassword(value);
+    setPasswordStrength(calculatePasswordStrength(value));
+  };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,11 +88,9 @@ const Auth = () => {
     setLoading(false);
 
     if (error) {
-      if (error.message.includes("already registered")) {
-        toast.error("This email is already registered. Please sign in instead.");
-      } else {
-        toast.error(error.message);
-      }
+      // Generic error message to prevent information leakage
+      toast.error("Unable to create account. Please try again or contact support.");
+      console.error("Signup error:", error.code); // Log for debugging, not the message
     } else {
       toast.success("Account created successfully! You can now sign in.");
       setEmail("");
@@ -100,11 +121,9 @@ const Auth = () => {
     setLoading(false);
 
     if (error) {
-      if (error.message.includes("Invalid login credentials")) {
-        toast.error("Invalid email or password. Please try again.");
-      } else {
-        toast.error(error.message);
-      }
+      // Generic error message to prevent information leakage
+      toast.error("Invalid credentials. Please try again.");
+      console.error("Signin error:", error.code); // Log for debugging, not the message
     }
   };
 
@@ -147,8 +166,9 @@ const Auth = () => {
                   type="password"
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => handlePasswordChange(e.target.value)}
                   required
+                  autoComplete="current-password"
                 />
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
@@ -177,12 +197,40 @@ const Auth = () => {
                   type="password"
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => handlePasswordChange(e.target.value)}
                   required
-                  minLength={6}
+                  minLength={8}
+                  autoComplete="new-password"
                 />
+                {password && (
+                  <div className="space-y-1">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((level) => (
+                        <div
+                          key={level}
+                          className={`h-1 flex-1 rounded-full transition-colors ${
+                            level <= passwordStrength
+                              ? passwordStrength <= 2
+                                ? "bg-destructive"
+                                : passwordStrength <= 3
+                                ? "bg-yellow-500"
+                                : "bg-green-500"
+                              : "bg-muted"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {passwordStrength <= 2
+                        ? "Weak password"
+                        : passwordStrength <= 3
+                        ? "Medium password"
+                        : "Strong password"}
+                    </p>
+                  </div>
+                )}
                 <p className="text-xs text-muted-foreground">
-                  Password must be at least 6 characters
+                  Must be 8+ characters with uppercase, lowercase, number, and special character
                 </p>
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
