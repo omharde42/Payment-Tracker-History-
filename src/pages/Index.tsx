@@ -51,6 +51,11 @@ const Index = () => {
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [transactions, selectedMonth, typeFilter, searchQuery]);
 
+  const uniquePersonNames = useMemo(() => {
+    const names = new Set(transactions.map(t => t.personName));
+    return Array.from(names).sort();
+  }, [transactions]);
+
   const handleAddTransaction = async (transactionData: Omit<Transaction, "id" | "createdAt">) => {
     if (editingTransaction) {
       const success = await updateTransaction(editingTransaction.id, transactionData);
@@ -208,6 +213,7 @@ const Index = () => {
           onOpenChange={handleFormOpenChange}
           onSubmit={handleAddTransaction}
           editTransaction={editingTransaction}
+          existingNames={uniquePersonNames}
         />
       </div>
     </div>

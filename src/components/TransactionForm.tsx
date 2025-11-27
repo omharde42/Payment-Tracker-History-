@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Transaction, TransactionType } from "@/types/transaction";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -9,21 +9,34 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { transactionSchema } from "@/schemas/transaction";
 import { toast } from "sonner";
 import { z } from "zod";
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Check } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface TransactionFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (transaction: Omit<Transaction, "id" | "createdAt">) => void;
   editTransaction?: Transaction;
+  existingNames?: string[];
 }
 
-export function TransactionForm({ open, onOpenChange, onSubmit, editTransaction }: TransactionFormProps) {
+export function TransactionForm({ open, onOpenChange, onSubmit, editTransaction, existingNames = [] }: TransactionFormProps) {
   const [personName, setPersonName] = useState("");
   const [amount, setAmount] = useState("");
   const [type, setType] = useState<TransactionType>("given");
   const [note, setNote] = useState("");
   const [date, setDate] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const filteredNames = useMemo(() => {
+    if (!personName.trim()) return existingNames;
+    return existingNames.filter(name => 
+      name.toLowerCase().includes(personName.toLowerCase())
+    );
+  }, [personName, existingNames]);
 
   useEffect(() => {
     if (editTransaction) {
@@ -91,13 +104,51 @@ export function TransactionForm({ open, onOpenChange, onSubmit, editTransaction 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="personName">Person Name</Label>
-            <Input
-              id="personName"
-              value={personName}
-              onChange={(e) => setPersonName(e.target.value)}
-              placeholder="Enter person's name"
-              maxLength={100}
-            />
+            <Popover open={showSuggestions && filteredNames.length > 0} onOpenChange={setShowSuggestions}>
+              <PopoverTrigger asChild>
+                <div className="relative">
+                  <Input
+                    id="personName"
+                    value={personName}
+                    onChange={(e) => {
+                      setPersonName(e.target.value);
+                      setShowSuggestions(true);
+                    }}
+                    onFocus={() => setShowSuggestions(true)}
+                    placeholder="Enter person's name"
+                    maxLength={100}
+                    autoComplete="off"
+                  />
+                </div>
+              </PopoverTrigger>
+              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+                <Command>
+                  <CommandList>
+                    <CommandEmpty>No suggestions found.</CommandEmpty>
+                    <CommandGroup>
+                      {filteredNames.map((name) => (
+                        <CommandItem
+                          key={name}
+                          value={name}
+                          onSelect={() => {
+                            setPersonName(name);
+                            setShowSuggestions(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              personName === name ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
             {errors.personName && (
               <p className="text-sm text-destructive">{errors.personName}</p>
             )}
