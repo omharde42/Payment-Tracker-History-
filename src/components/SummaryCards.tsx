@@ -36,7 +36,7 @@ export function SummaryCards({ transactions }: SummaryCardsProps) {
       <Card className="p-6 bg-gradient-to-br from-taken/10 to-taken/5 border-taken/20">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-muted-foreground mb-1">Total Take</p>
+            <p className="text-sm font-medium text-muted-foreground mb-1">Total Taken/Left to Take</p>
             <p className="text-2xl font-bold text-taken">₹{totalTaken.toFixed(2)}</p>
           </div>
           <div className="h-12 w-12 rounded-full bg-taken/20 flex items-center justify-center">
