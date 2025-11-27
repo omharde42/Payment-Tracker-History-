@@ -128,7 +128,7 @@ export function TransactionForm({ open, onOpenChange, onSubmit, editTransaction 
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="given">Give</SelectItem>
-                  <SelectItem value="taken">Take</SelectItem>
+                  <SelectItem value="taken">Taken/Left to Take</SelectItem>
                   <SelectItem value="left_to_give">Left to Give</SelectItem>
                 </SelectContent>
               </Select>

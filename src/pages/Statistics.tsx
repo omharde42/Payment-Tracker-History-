@@ -266,7 +266,7 @@ const Statistics = () => {
 
               <div className="flex justify-between items-center p-4 rounded-lg bg-taken/10">
                 <div>
-                  <p className="text-sm text-muted-foreground">Taken</p>
+                  <p className="text-sm text-muted-foreground">Taken/Left to Take</p>
                   <p className="text-2xl font-bold">₹{stats.totalTaken.toFixed(2)}</p>
                 </div>
                 <div className="text-right">
